@@ -109,6 +109,8 @@ export class PlayerBall extends Balls {
   }
 
   render(ctx) {
+    ctx.fillStyle = '#555'
+
     let r = this.size/2
     let x = this.x
     let y = this.y
@@ -118,6 +120,40 @@ export class PlayerBall extends Balls {
       ctx.fill()
     } else {
       ctx.stroke()
+    }
+  }
+
+  checkNearWall(wall) {
+    let dis1 = Math.pow(wall.a.x - this.x, 2) + Math.pow(wall.a.y - this.y, 2)
+    let dis2 = Math.pow(wall.b.x - this.x, 2) + Math.pow(wall.b.y - this.y, 2)
+    let dis3 = Math.pow(wall.a.x - wall.b.x, 2) + Math.pow(wall.a.y - wall.b.y, 2)
+
+    if ((dis1 > dis3) || (dis2 > dis3)) return
+
+
+    let a = wall.a.y - wall.b.y
+    let b = wall.b.x - wall.a.x
+    let c = wall.a.x * wall.b.y - wall.b.x * wall.a.y
+
+    let dis = Math.abs(a*this.x + b*this.y + c) / Math.sqrt(a*a + b*b)
+
+    if (dis < this.radius()) {
+      // Определение вектора отражения
+      let n = new Vector(
+        wall.a.y - wall.b.y,
+        wall.b.x - wall.a.x
+      ).norm()
+
+      n = n.multiply(n.multiply(this.vector))
+      this.vector = this.vector.minus(n.multiply(2))
+      // this.vector = this.vector.multiply(settings.borderCoefficient)
+
+      // Отодвинуть круг от отрезка
+      // debugger
+      let disDiff = this.radius() - dis
+      n = n.norm().multiply(disDiff)
+      this.x -= n.x
+      this.y -= n.y
     }
   }
 

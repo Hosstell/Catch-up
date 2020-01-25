@@ -1,6 +1,8 @@
 import {Balls, EnemyBall, UserBall} from './balls.js'
 import settings from './settings.js'
 import Game from './game.js'
+import {Wall, Point} from './wall.js'
+// import socket from 'socket.io-client'
 
 var canvas = document.getElementById('game')
 canvas.height = settings.height
@@ -9,12 +11,12 @@ canvas.width = settings.width
 var context = canvas.getContext('2d')
 var pressedKeys = new Set()
 var users = [
-  new UserBall(200, 120, 30, 2, {
+  new UserBall(300, 120, 30, 2, {
     up: 87,
     down: 83,
     left: 68,
     right: 65
-  }),
+  })
   // new UserBall(400, 100, 30, 2, {
   //   up: 38,
   //   down: 40,
@@ -26,7 +28,7 @@ users[0].active = true
 
 
 var enemies = [
-  new EnemyBall(200, 400, 30, 2),
+  new EnemyBall(50, 100, 30, 2),
   // new EnemyBall(300, 600, 30, 2),
   // new EnemyBall(400, 300, 30, 2),
   // new EnemyBall(400, 200, 30, 2),
@@ -35,8 +37,19 @@ var enemies = [
   // new EnemyBall(400, 800, 30, 2)
 ]
 
+var walls = [
+  new Wall(new Point(200, 200), new Point(700, 200)),
+  new Wall(new Point(200, 300), new Point(700, 300)),
+  new Wall(new Point(200, 400), new Point(500, 400)),
+  new Wall(new Point(500, 400), new Point(500, 700)),
+  new Wall(new Point(700, 300), new Point(700, 500)),
+  // new Wall(new Point(700, 500), new Point(700, 700)),
+  new Wall(new Point(700, 700), new Point(200, 700)),
+]
+
 let game = new Game(
   context,
+  walls,
   pressedKeys,
   users,
   enemies
