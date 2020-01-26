@@ -31,7 +31,7 @@ export class PlayerBall extends Balls {
     this.active = false
     this.status = true
 
-    this.speed = 0.2
+    this.speed = 0.4
     this.vector = new Vector(0, 0)
   }
 

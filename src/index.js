@@ -44,7 +44,11 @@ var enemies = [
 ]
 
 var walls = [
-  new Wall(new Point(200, 200), new Point(700, 200)),
+  new Wall(new Point(200, 200), new Point(400, 200)),
+  new Wall(new Point(500, 200), new Point(700, 200)),
+  new Wall(new Point(700, 200), new Point(700, 100)),
+  new Wall(new Point(400, 200), new Point(400, 100)),
+  new Wall(new Point(400, 100), new Point(700, 100)),
   new Wall(new Point(200, 300), new Point(700, 300)),
   new Wall(new Point(200, 400), new Point(500, 400)),
   new Wall(new Point(500, 400), new Point(500, 700)),
@@ -61,11 +65,22 @@ let game = new Game(
   enemies
 )
 
+let t1 = performance.now()
 function index() {
+  let t2 = performance.now()
+
+
+  // console.log(t2 - t1)
+
+
   game.gameLoop()
-  window.requestAnimationFrame(index)
+  // window.requestAnimationFrame(index)
+
+  t1 = performance.now()
 }
-index()
+// index()
+
+setInterval(index, 10)
 
 
 // Управление
