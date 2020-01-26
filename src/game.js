@@ -70,8 +70,6 @@ export default class Game {
       wall.render(this.gameData.ctx)
       this.gameData.ctx.stroke()
     })
-
-
   }
 
   renderVisibilityArea(user) {

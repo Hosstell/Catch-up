@@ -185,7 +185,14 @@ export class UserBall extends PlayerBall {
     this.keyboard = keyboard
   }
 
-  manage(pressedKeys) {
+  manage(pressKeys) {
+    let pressedKeys = _.pickBy(this.keyboard, function(value, key, object) {
+      return pressKeys.has(value)
+    })
+    this.doStep(Object.keys(pressedKeys))
+  }
+
+  doStep(pressedKeys) {
     // Чтобы обездвижить после заманивания
     if (!this.status) return
 
@@ -193,14 +200,14 @@ export class UserBall extends PlayerBall {
     let y = 0
 
     let keys = {
-      [this.keyboard.up]    : () => { y -= this.speed },
-      [this.keyboard.down]  : () => { y += this.speed },
-      [this.keyboard.left]  : () => { x += this.speed },
-      [this.keyboard.right] : () => { x -= this.speed }
+      'up'    : () => { y -= this.speed },
+      'down'  : () => { y += this.speed },
+      'left'  : () => { x += this.speed },
+      'right' : () => { x -= this.speed }
     }
 
     Object.keys(keys).forEach(key => {
-      if (pressedKeys.has(key)) {
+      if (pressedKeys.includes(key)) {
         keys[key]()
       }
     })
@@ -248,20 +255,20 @@ export class EnemyBall extends UserBall {
       pathVector.x = Math.abs(pathVector.x) > Math.random() ? pathVector.x : 0
       pathVector.y = Math.abs(pathVector.y) > Math.random() ? pathVector.y : 0
 
-      let pressedKeys = new Set()
+      let pressedKeys = []
       if (pathVector.x > 0) {
-        pressedKeys.add('right')
+        pressedKeys.push('right')
       }
       if (pathVector.x < 0) {
-        pressedKeys.add('left')
+        pressedKeys.push('left')
       }
       if (pathVector.y > 0) {
-        pressedKeys.add('up')
+        pressedKeys.push('up')
       }
       if (pathVector.y < 0) {
-        pressedKeys.add('down')
+        pressedKeys.push('down')
       }
-      super.manage(pressedKeys)
+      super.doStep(pressedKeys)
 
     } else {
       let activePlayer = all.filter(player => player.active)[0]
@@ -292,20 +299,20 @@ export class EnemyBall extends UserBall {
       pathVector.x = Math.abs(pathVector.x) > Math.random() ? pathVector.x : 0
       pathVector.y = Math.abs(pathVector.y) > Math.random() ? pathVector.y : 0
 
-      let pressedKeys = new Set()
+      let pressedKeys = []
       if (pathVector.x > 0) {
-        pressedKeys.add('right')
+        pressedKeys.push('right')
       }
       if (pathVector.x < 0) {
-        pressedKeys.add('left')
+        pressedKeys.push('left')
       }
       if (pathVector.y > 0) {
-        pressedKeys.add('up')
+        pressedKeys.push('up')
       }
       if (pathVector.y < 0) {
-        pressedKeys.add('down')
+        pressedKeys.push('down')
       }
-      super.manage(pressedKeys)
+      super.doStep(pressedKeys)
     }
   }
 }

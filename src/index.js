@@ -2,7 +2,13 @@ import {Balls, EnemyBall, UserBall} from './balls.js'
 import settings from './settings.js'
 import Game from './game.js'
 import {Wall, Point} from './wall.js'
-// import socket from 'socket.io-client'
+
+// var socket = io.connect('http://localhost:8000');
+// socket.on('news', function (data) {
+//   console.log(data);
+//   socket.emit('my other event', { my: 'data' });
+// });
+
 
 var canvas = document.getElementById('game')
 canvas.height = settings.height
@@ -11,11 +17,11 @@ canvas.width = settings.width
 var context = canvas.getContext('2d')
 var pressedKeys = new Set()
 var users = [
-  new UserBall(300, 120, 30, 2, {
-    up: 87,
-    down: 83,
-    left: 68,
-    right: 65
+  new UserBall(300, 120, 30, 3, {
+    up: '87',
+    down: '83',
+    left: '68',
+    right: '65'
   })
   // new UserBall(400, 100, 30, 2, {
   //   up: 38,
