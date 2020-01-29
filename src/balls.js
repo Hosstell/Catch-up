@@ -30,9 +30,10 @@ export class PlayerBall extends Balls {
 
     this.active = false
     this.status = true
-
     this.speed = 0.4
     this.vector = new Vector(0, 0)
+    this.lastPressedKeys = []
+    this.color = '#000'
   }
 
   update() {
@@ -109,8 +110,9 @@ export class PlayerBall extends Balls {
   }
 
   render(ctx) {
-    ctx.fillStyle = '#555'
+    ctx.fillStyle = this.color
 
+    ctx.beginPath()
     let r = this.size/2
     let x = this.x
     let y = this.y
@@ -176,21 +178,6 @@ export class PlayerBall extends Balls {
       }
     }
   }
-}
-
-export class UserBall extends PlayerBall {
-  constructor(x, y, size, maxSpeed, keyboard) {
-    super(x, y, size, maxSpeed)
-
-    this.keyboard = keyboard
-  }
-
-  manage(pressKeys) {
-    let pressedKeys = _.pickBy(this.keyboard, function(value, key, object) {
-      return pressKeys.has(value)
-    })
-    this.doStep(Object.keys(pressedKeys))
-  }
 
   doStep(pressedKeys) {
     // Чтобы обездвижить после заманивания
@@ -220,6 +207,38 @@ export class UserBall extends PlayerBall {
       this.vector.x += x
       this.vector.y += y
     }
+  }
+
+  changeColor(color) {
+    console.log(color)
+    this.color = color
+  }
+}
+
+export class UserBall extends PlayerBall {
+  constructor(x, y, size, maxSpeed, keyboard) {
+    super(x, y, size, maxSpeed)
+
+    this.keyboard = keyboard
+  }
+
+  manage(gameData) {
+    let pressedKeys = Object.keys(_.pickBy(this.keyboard, function(value, key, object) {
+      return gameData.pressKeys.has(value)
+    }))
+
+    if (this.lastPressedKeys.length !== pressedKeys.length) {
+      this.lastPressedKeys = pressedKeys
+      gameData.socket.emit('updateUser', this)
+    }
+
+    this.doStep(pressedKeys)
+  }
+}
+
+export class AnotherUserBall extends PlayerBall {
+  manage() {
+    this.doStep(this.lastPressedKeys)
   }
 }
 
@@ -318,7 +337,17 @@ export class EnemyBall extends UserBall {
 }
 
 
-
+export function cloneAnotherUser(obj) {
+  let newPlayer =  new AnotherUserBall(obj.x, obj.y, obj.size)
+  newPlayer.id = obj.id
+  newPlayer.active = obj.active
+  newPlayer.status = obj.status
+  newPlayer.speed = obj.speed
+  newPlayer.vector = new Vector(obj.vector.x, obj.vector.y)
+  newPlayer.lastPressedKeys = obj.lastPressedKeys
+  newPlayer.color = obj.color
+  return newPlayer
+}
 
 
 

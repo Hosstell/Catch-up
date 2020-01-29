@@ -1,16 +1,46 @@
 import settings from "./settings.js"
 import {Point, Wall} from "./wall.js";
 import Vector from "./vector.js";
+import Socket from './socket.js'
+import {AnotherUserBall, cloneAnotherUser} from "./balls.js";
 
 export default class Game {
-  constructor(ctx, walls, pressKeys, users, enemies) {
-    this.gameData = {
+  constructor(ctx, walls, pressKeys, user, enemies) {
+
+    let gameData = {
+      socket: io.connect('http://188.233.50.109'),
       ctx: ctx,
       walls: walls,
       pressKeys: pressKeys,
-      users: users,
+      user: user,
       enemies: enemies
     }
+    this.gameData = gameData
+
+    // Отправление собственных данных
+    this.gameData.socket.emit('getNewUser', user)
+
+    // Получение данных о других игроках
+    this.gameData.socket.emit('getAnotherUsers')
+    this.gameData.socket.on('getAnotherUsers', function (anotherUsers) {
+      anotherUsers.forEach(user => {
+        gameData.enemies.push(cloneAnotherUser(user))
+      })
+    })
+
+    // Обновление данных о пользователе
+    this.gameData.socket.on('updateUser', function (anotherUser) {
+      // TODO Не возвращать собственные данные!
+      if (anotherUser.id !== user.id) {
+        gameData.enemies = gameData.enemies.filter(enemy => enemy.id !== anotherUser.id)
+        gameData.enemies.push(cloneAnotherUser(anotherUser))
+      }
+    })
+
+    // Удаление вышедшего пользователя
+    this.gameData.socket.on('deleteUser', function (id) {
+      gameData.enemies = gameData.enemies.filter(enemy => enemy.id !== id)
+    })
   }
 
   gameLoop() {
@@ -20,11 +50,11 @@ export default class Game {
   }
 
   update() {
-    this.gameData.users.forEach(user => user.update())
+    this.gameData.user.update()
     this.gameData.enemies.forEach(enemy => enemy.update())
 
 
-    let allPlayers = [...this.gameData.users, ...this.gameData.enemies]
+    let allPlayers = [this.gameData.user, ...this.gameData.enemies]
     // Проверка столновений между игроками
     for(let i = 0; i<allPlayers.length; i++) {
       for(let j = 0; j<i; j++) {
@@ -56,13 +86,11 @@ export default class Game {
       this.gameData.ctx.stroke()
     })
 
-    this.renderVisibilityArea(this.gameData.users[0])
+    // Закрасить невидемые зоны
+    this.renderVisibilityArea(this.gameData.user)
 
-    // Игроки
-    this.gameData.users.forEach(user => {
-      this.gameData.ctx.beginPath()
-      user.render(this.gameData.ctx)
-    })
+    // Игрок
+    this.gameData.user.render(this.gameData.ctx)
 
     // Дополнительные стены
     this.gameData.walls.forEach(wall => {
@@ -103,14 +131,11 @@ export default class Game {
       this.gameData.ctx.lineTo(area[3].x, area[3].y)
       this.gameData.ctx.fill()
     })
-
   }
 
   manager() {
-    this.gameData.users.forEach(user => user.manage(this.gameData.pressKeys))
+    this.gameData.user.manage(this.gameData)
 
-    this.gameData.enemies.forEach(enemy => enemy.manage(
-      [...this.gameData.users, ...this.gameData.enemies]
-    ))
+    this.gameData.enemies.forEach(enemy => enemy.manage())
   }
 }

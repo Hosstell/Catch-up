@@ -14,13 +14,43 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
 });
 
+
+// data
+let players = []
+
 // socket
 io.on('connection', function (socket) {
-  socket.emit('news', { hello: 'world' });
-  socket.on('my other event', function (data) {
-    console.log(data);
-  });
+  // Генерируем id
+  let id
+
+  socket.on('getNewUser', function (user) {
+    players.push(user)
+    id =  user.id
+    io.emit('updateUser', user)
+  })
+
+  // Получение других пользователей
+  socket.on('getAnotherUsers', function() {
+    let anotherUsers = players.filter(player => player.id !== id)
+    socket.emit('getAnotherUsers', anotherUsers)
+  })
+
+  // Обновление данных пользователя
+  socket.on('updateUser', function (user) {
+    players = players.filter(player => player.id !== id)
+    players.push(user)
+    io.emit('updateUser', user)
+  })
+
+  socket.on('disconnect', function () {
+    players = players.filter(player => player.id !== id)
+    io.emit('deleteUser', id)
+  })
 });
+
+
+
+
 
 
 

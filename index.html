@@ -5,13 +5,27 @@
   <title>Title</title>
 </head>
   <body>
-    <div>
+    <span>
       <canvas id="game"></canvas>
-    </div>
-<!--    <script src="/socket.io/socket.io.js"></script>-->
+    </span>
+
+    <span style="position: absolute; padding-left: 15px;">
+      <span>
+        Цвет:
+      </span>
+
+      <span>
+        <input id="colorSelect" class="jscolor" value="000">
+      </span>
+    </span>
+
+
+    <script src="./src/jscolor.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="./src/tools/lodash.js"></script>
     <script type="module" src="./src/index.js"></script>
   </body>
+
   <style>
     #game {
       border: 1px solid black;
