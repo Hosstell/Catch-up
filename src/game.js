@@ -2,51 +2,20 @@ import settings from "./settings.js"
 import {Point, Wall} from "./wall.js";
 import Vector from "./vector.js";
 import Socket from './socket.js'
-import {AnotherUserBall, cloneAnotherUser} from "./balls.js";
+import {UserBall, createUserObjectByObject} from "./balls.js";
 
 export default class Game {
-  constructor(ctx, walls, pressKeys, user, enemies) {
-
-    let gameData = {
-      socket: io.connect('http://188.233.50.109'),
-      ctx: ctx,
+  constructor(user, walls) {
+    this.gameData = {
       walls: walls,
-      pressKeys: pressKeys,
       user: user,
-      enemies: enemies
+      enemies: []
     }
-    this.gameData = gameData
-
-    // Отправление собственных данных
-    this.gameData.socket.emit('getNewUser', user)
-
-    // Получение данных о других игроках
-    this.gameData.socket.emit('getAnotherUsers')
-    this.gameData.socket.on('getAnotherUsers', function (anotherUsers) {
-      anotherUsers.forEach(user => {
-        gameData.enemies.push(cloneAnotherUser(user))
-      })
-    })
-
-    // Обновление данных о пользователе
-    this.gameData.socket.on('updateUser', function (anotherUser) {
-      // TODO Не возвращать собственные данные!
-      if (anotherUser.id !== user.id) {
-        gameData.enemies = gameData.enemies.filter(enemy => enemy.id !== anotherUser.id)
-        gameData.enemies.push(cloneAnotherUser(anotherUser))
-      }
-    })
-
-    // Удаление вышедшего пользователя
-    this.gameData.socket.on('deleteUser', function (id) {
-      gameData.enemies = gameData.enemies.filter(enemy => enemy.id !== id)
-    })
   }
 
-  gameLoop() {
-    this.update()
-    this.render()
+  step() {
     this.manager()
+    this.update()
   }
 
   update() {
@@ -76,31 +45,31 @@ export default class Game {
     })
   }
 
-  render() {
-    this.gameData.ctx.clearRect(0, 0, settings.width, settings.height)
+  render(ctx) {
+    ctx.clearRect(0, 0, settings.width, settings.height)
 
     // Враги
     this.gameData.enemies.forEach(enemy => {
-      this.gameData.ctx.beginPath()
-      enemy.render(this.gameData.ctx)
-      this.gameData.ctx.stroke()
+      ctx.beginPath()
+      enemy.render(ctx)
+      ctx.stroke()
     })
 
     // Закрасить невидемые зоны
-    this.renderVisibilityArea(this.gameData.user)
+    this.renderVisibilityArea(this.gameData.user, ctx)
 
     // Игрок
-    this.gameData.user.render(this.gameData.ctx)
+    this.gameData.user.render(ctx)
 
     // Дополнительные стены
     this.gameData.walls.forEach(wall => {
-      this.gameData.ctx.beginPath()
-      wall.render(this.gameData.ctx)
-      this.gameData.ctx.stroke()
+      ctx.beginPath()
+      wall.render(ctx)
+      ctx.stroke()
     })
   }
 
-  renderVisibilityArea(user) {
+  renderVisibilityArea(user, ctx) {
     let areas = []
 
     this.gameData.walls.forEach(wall => {
@@ -122,20 +91,23 @@ export default class Game {
       ])
     })
 
-    this.gameData.ctx.fillStyle = '#888'
+    ctx.fillStyle = '#888'
     areas.forEach(area => {
-      this.gameData.ctx.beginPath();
-      this.gameData.ctx.moveTo(area[0].x, area[0].y)
-      this.gameData.ctx.lineTo(area[1].x, area[1].y)
-      this.gameData.ctx.lineTo(area[2].x, area[2].y)
-      this.gameData.ctx.lineTo(area[3].x, area[3].y)
-      this.gameData.ctx.fill()
+      ctx.beginPath();
+      ctx.moveTo(area[0].x, area[0].y)
+      ctx.lineTo(area[1].x, area[1].y)
+      ctx.lineTo(area[2].x, area[2].y)
+      ctx.lineTo(area[3].x, area[3].y)
+      ctx.fill()
     })
   }
 
   manager() {
-    this.gameData.user.manage(this.gameData)
-
+    this.gameData.user.manage()
     this.gameData.enemies.forEach(enemy => enemy.manage())
+  }
+
+  getCopy() {
+    return _.cloneDeep(this)
   }
 }

@@ -1,4 +1,4 @@
-import {AnotherUserBall} from './balls.js'
+import {UserBall} from './balls.js'
 
 export default class Socket{
   constructor(gameData) {
@@ -11,7 +11,7 @@ export default class Socket{
     socket.on('getAnotherUsers', function (anotherUsers) {
       anotherUsers.forEach(user => {
         gameData.enemies.push(
-          new AnotherUserBall(anotherUsers.x, anotherUsers.y, 30, 2)
+          new UserBall(anotherUsers.x, anotherUsers.y, 30, 2)
         )
       })
     })
