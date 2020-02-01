@@ -1,21 +1,23 @@
 import {UserBall} from './balls.js'
 
 export default class Socket{
-  constructor(gameData) {
+  constructor(game) {
     let socket = io.connect('http://188.233.50.109')
-    this.socket = socket
 
-    socket.emit('getNewUser', gameData.user)
+    socket.emit('login', game.user)
+    socket.emit('getAllUsers')
 
-    socket.emit('getAnotherUsers')
-    socket.on('getAnotherUsers', function (anotherUsers) {
-      anotherUsers.forEach(user => {
-        gameData.enemies.push(
-          new UserBall(anotherUsers.x, anotherUsers.y, 30, 2)
-        )
-      })
-    })
+
+    // socket.on('newUserLogin', function(newUser) {
+    //   game.e
+    // })
+    //
+    // socket.on('getAllUsers', function (anotherUsers) {
+    //   anotherUsers.forEach(user => {
+    //     game.enemies.push(
+    //       new UserBall(anotherUsers.x, anotherUsers.y, 30, 2)
+    //     )
+    //   })
+    // })
   }
-
-
 }

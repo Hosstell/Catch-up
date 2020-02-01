@@ -20,19 +20,27 @@ let players = []
 
 // socket
 io.on('connection', function (socket) {
-  // Генерируем id
   let id
 
-  socket.on('getNewUser', function (user) {
+  socket.on('login', function (user) {
+    console.log('New user connected. id: ' + user.id)
+
     players.push(user)
     id =  user.id
-    io.emit('updateUser', user)
+    io.emit('newUserLogin', user)
+  })
+
+
+  socket.on('sendMyPressedKeyEvent', function (event) {
+    // setTimeout(() => {
+      io.emit('sendPressedKeyEvent', event)
+    // }, 100)
   })
 
   // Получение других пользователей
-  socket.on('getAnotherUsers', function() {
+  socket.on('getAllUsers', function() {
     let anotherUsers = players.filter(player => player.id !== id)
-    socket.emit('getAnotherUsers', anotherUsers)
+    socket.emit('getAllUsers', anotherUsers)
   })
 
   // Обновление данных пользователя
@@ -43,6 +51,8 @@ io.on('connection', function (socket) {
   })
 
   socket.on('disconnect', function () {
+    console.log('User disconnected. id: ' + id)
+
     players = players.filter(player => player.id !== id)
     io.emit('deleteUser', id)
   })

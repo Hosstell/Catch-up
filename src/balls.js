@@ -122,15 +122,12 @@ export class PlayerBall extends Balls {
     ctx.fillStyle = 'black'
     ctx.stroke()
 
-
     ctx.fillStyle = this.active ? 'black': 'white'
     ctx.beginPath()
     ctx.arc(x, y, r-7, 0,Math.PI*2)
     ctx.fill()
     ctx.fillStyle = 'black'
     ctx.stroke()
-
-
   }
 
   checkNearWall(wall) {
@@ -235,12 +232,21 @@ export class UserBall extends PlayerBall {
 
   changePressedKeys(pressedKeys) {
     // Оставляем только те нажатые клавиши, которые прописаны в keyboard объекта
-    this.lastPressedKeys = Object.keys(_.pickBy(this.keyboard, function(value, key, object) {
+    let lastPressedKeys = Object.keys(_.pickBy(this.keyboard, function(value, key, object) {
       return pressedKeys.has(value)
     }))
+
+    if (lastPressedKeys.length !== this.lastPressedKeys.length) {
+      // this.lastPressedKeys = lastPressedKeys
+      this.pressedKeyAction(lastPressedKeys)
+    }
   }
 
+  // Метод запускающийся при нажатие кнопок
+  pressedKeyAction () {}
+
   manage() {
+
     this.doStep(this.lastPressedKeys)
   }
 }

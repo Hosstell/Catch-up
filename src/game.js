@@ -6,11 +6,9 @@ import {UserBall, createUserObjectByObject} from "./balls.js";
 
 export default class Game {
   constructor(user, walls) {
-    this.gameData = {
-      walls: walls,
-      user: user,
-      enemies: []
-    }
+    this.walls = walls
+    this.user = user
+    this.enemies = []
   }
 
   step() {
@@ -19,11 +17,11 @@ export default class Game {
   }
 
   update() {
-    this.gameData.user.update()
-    this.gameData.enemies.forEach(enemy => enemy.update())
+    this.user.update()
+    this.enemies.forEach(enemy => enemy.update())
 
 
-    let allPlayers = [this.gameData.user, ...this.gameData.enemies]
+    let allPlayers = [this.user, ...this.enemies]
     // Проверка столновений между игроками
     for(let i = 0; i<allPlayers.length; i++) {
       for(let j = 0; j<i; j++) {
@@ -39,7 +37,7 @@ export default class Game {
 
     // Проверка столкновений между игроком и стеной
     allPlayers.forEach(player => {
-      this.gameData.walls.forEach(wall => {
+      this.walls.forEach(wall => {
         player.checkNearWall(wall)
       })
     })
@@ -49,20 +47,20 @@ export default class Game {
     ctx.clearRect(0, 0, settings.width, settings.height)
 
     // Враги
-    this.gameData.enemies.forEach(enemy => {
+    this.enemies.forEach(enemy => {
       ctx.beginPath()
       enemy.render(ctx)
       ctx.stroke()
     })
 
     // Закрасить невидемые зоны
-    this.renderVisibilityArea(this.gameData.user, ctx)
+    this.renderVisibilityArea(this.user, ctx)
 
     // Игрок
-    this.gameData.user.render(ctx)
+    this.user.render(ctx)
 
     // Дополнительные стены
-    this.gameData.walls.forEach(wall => {
+    this.walls.forEach(wall => {
       ctx.beginPath()
       wall.render(ctx)
       ctx.stroke()
@@ -72,7 +70,7 @@ export default class Game {
   renderVisibilityArea(user, ctx) {
     let areas = []
 
-    this.gameData.walls.forEach(wall => {
+    this.walls.forEach(wall => {
       let a = new Vector(
         wall.a.x - user.x,
         wall.a.y - user.y,
@@ -103,8 +101,8 @@ export default class Game {
   }
 
   manager() {
-    this.gameData.user.manage()
-    this.gameData.enemies.forEach(enemy => enemy.manage())
+    this.user.manage()
+    this.enemies.forEach(enemy => enemy.manage())
   }
 
   getCopy() {
