@@ -1,26 +1,28 @@
 import settings from "./settings.js"
+import {Point, Wall} from "./wall.js";
+import Vector from "./vector.js";
+import Socket from './socket.js'
+import {UserBall, createUserObjectByObject} from "./balls.js";
 
 export default class Game {
-  constructor(ctx, pressKeys, users, enemies) {
-    this.gameData = {
-      ctx: ctx,
-      pressKeys: pressKeys,
-      users: users,
-      enemies: enemies
-    }
+  constructor(user, walls) {
+    this.walls = walls
+    this.user = user
+    this.enemies = []
   }
 
-  gameLoop() {
-    this.update()
-    this.render()
+  step() {
     this.manager()
+    this.update()
   }
 
   update() {
-    this.gameData.users.forEach(user => user.update())
-    this.gameData.enemies.forEach(enemy => enemy.update())
+    this.user.update()
+    this.enemies.forEach(enemy => enemy.update())
 
-    let allPlayers = [...this.gameData.users, ...this.gameData.enemies]
+
+    let allPlayers = [this.user, ...this.enemies]
+    // Проверка столновений между игроками
     for(let i = 0; i<allPlayers.length; i++) {
       for(let j = 0; j<i; j++) {
         let playerA = allPlayers[i]
@@ -32,28 +34,78 @@ export default class Game {
         }
       }
     }
+
+    // Проверка столкновений между игроком и стеной
+    allPlayers.forEach(player => {
+      this.walls.forEach(wall => {
+        player.checkNearWall(wall)
+      })
+    })
   }
 
-  render() {
-    this.gameData.ctx.clearRect(0, 0, settings.width, settings.height)
+  render(ctx) {
+    ctx.clearRect(0, 0, settings.width, settings.height)
 
-    this.gameData.users.forEach(user => {
-      this.gameData.ctx.beginPath()
-      user.render(this.gameData.ctx)
+    // Враги
+    this.enemies.forEach(enemy => {
+      ctx.beginPath()
+      enemy.render(ctx)
+      ctx.stroke()
     })
 
-    this.gameData.enemies.forEach(enemy => {
-      this.gameData.ctx.beginPath()
-      enemy.render(this.gameData.ctx)
-      this.gameData.ctx.stroke()
+    // Закрасить невидемые зоны
+    this.renderVisibilityArea(this.user, ctx)
+
+    // Игрок
+    this.user.render(ctx)
+
+    // Дополнительные стены
+    this.walls.forEach(wall => {
+      ctx.beginPath()
+      wall.render(ctx)
+      ctx.stroke()
+    })
+  }
+
+  renderVisibilityArea(user, ctx) {
+    let areas = []
+
+    this.walls.forEach(wall => {
+      let a = new Vector(
+        wall.a.x - user.x,
+        wall.a.y - user.y,
+      )
+
+      let b = new Vector(
+        wall.b.x - user.x,
+        wall.b.y - user.y,
+      )
+
+      areas.push([
+        a.norm().multiply(12000).plus(user),
+        wall.a,
+        wall.b,
+        b.norm().multiply(12000).plus(user)
+      ])
+    })
+
+    ctx.fillStyle = '#888'
+    areas.forEach(area => {
+      ctx.beginPath();
+      ctx.moveTo(area[0].x, area[0].y)
+      ctx.lineTo(area[1].x, area[1].y)
+      ctx.lineTo(area[2].x, area[2].y)
+      ctx.lineTo(area[3].x, area[3].y)
+      ctx.fill()
     })
   }
 
   manager() {
-    this.gameData.users.forEach(user => user.manage(this.gameData.pressKeys))
+    this.user.manage()
+    this.enemies.forEach(enemy => enemy.manage())
+  }
 
-    this.gameData.enemies.forEach(enemy => enemy.manage(
-      [...this.gameData.users, ...this.gameData.enemies]
-    ))
+  getCopy() {
+    return _.cloneDeep(this)
   }
 }

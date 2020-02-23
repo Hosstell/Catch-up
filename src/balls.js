@@ -30,9 +30,11 @@ export class PlayerBall extends Balls {
 
     this.active = false
     this.status = true
-
-    this.speed = 0.2
+    this.speed = 0.4
     this.vector = new Vector(0, 0)
+    this.lastPressedKeys = []
+    this.name = 'Игрок'
+    this.color = '#000'
   }
 
   update() {
@@ -112,12 +114,53 @@ export class PlayerBall extends Balls {
     let r = this.size/2
     let x = this.x
     let y = this.y
-    ctx.arc(x, y, r, 0,Math.PI*2)
 
-    if (this.active) {
-      ctx.fill()
-    } else {
-      ctx.stroke()
+    ctx.fillStyle = this.color
+    ctx.beginPath()
+    ctx.arc(x, y, r, 0,Math.PI*2)
+    ctx.fill()
+    ctx.fillStyle = 'black'
+    ctx.stroke()
+
+    ctx.fillStyle = this.active ? 'black': 'white'
+    ctx.beginPath()
+    ctx.arc(x, y, r-7, 0,Math.PI*2)
+    ctx.fill()
+    ctx.fillStyle = 'black'
+    ctx.stroke()
+  }
+
+  checkNearWall(wall) {
+    let dis1 = Math.pow(wall.a.x - this.x, 2) + Math.pow(wall.a.y - this.y, 2)
+    let dis2 = Math.pow(wall.b.x - this.x, 2) + Math.pow(wall.b.y - this.y, 2)
+    let dis3 = Math.pow(wall.a.x - wall.b.x, 2) + Math.pow(wall.a.y - wall.b.y, 2)
+
+    if ((dis1 > dis3) || (dis2 > dis3)) return
+
+
+    let a = wall.a.y - wall.b.y
+    let b = wall.b.x - wall.a.x
+    let c = wall.a.x * wall.b.y - wall.b.x * wall.a.y
+
+    let dis = Math.abs(a*this.x + b*this.y + c) / Math.sqrt(a*a + b*b)
+
+    if (dis < this.radius()) {
+      // Определение вектора отражения
+      let n = new Vector(
+        wall.a.y - wall.b.y,
+        wall.b.x - wall.a.x
+      ).norm()
+
+      n = n.multiply(n.multiply(this.vector))
+      this.vector = this.vector.minus(n.multiply(2))
+      // this.vector = this.vector.multiply(settings.borderCoefficient)
+
+      // Отодвинуть круг от отрезка
+      // debugger
+      let disDiff = this.radius() - dis
+      n = n.norm().multiply(disDiff)
+      this.x -= n.x
+      this.y -= n.y
     }
   }
 
@@ -140,16 +183,8 @@ export class PlayerBall extends Balls {
       }
     }
   }
-}
 
-export class UserBall extends PlayerBall {
-  constructor(x, y, size, maxSpeed, keyboard) {
-    super(x, y, size, maxSpeed)
-
-    this.keyboard = keyboard
-  }
-
-  manage(pressedKeys) {
+  doStep(pressedKeys) {
     // Чтобы обездвижить после заманивания
     if (!this.status) return
 
@@ -157,14 +192,14 @@ export class UserBall extends PlayerBall {
     let y = 0
 
     let keys = {
-      [this.keyboard.up]    : () => { y -= this.speed },
-      [this.keyboard.down]  : () => { y += this.speed },
-      [this.keyboard.left]  : () => { x += this.speed },
-      [this.keyboard.right] : () => { x -= this.speed }
+      'up'    : () => { y -= this.speed },
+      'down'  : () => { y += this.speed },
+      'left'  : () => { x += this.speed },
+      'right' : () => { x -= this.speed }
     }
 
     Object.keys(keys).forEach(key => {
-      if (pressedKeys.has(key)) {
+      if (pressedKeys.includes(key)) {
         keys[key]()
       }
     })
@@ -178,104 +213,55 @@ export class UserBall extends PlayerBall {
       this.vector.y += y
     }
   }
-}
 
-
-export class EnemyBall extends UserBall {
-  constructor(x, y, size, maxSpeed) {
-    let keyboard = {
-      up: 'up',
-      down: 'down',
-      left: 'left',
-      right: 'right'
-    }
-
-    super(x, y, size, maxSpeed, keyboard)
+  changeColor(color) {
+    this.color = color
   }
 
-  manage(allPlayes) {
-    let all = allPlayes.filter(player => player.id !== this.id)
-
-    if (this.active) {
-      // Нахождение близжайщего игрока
-      let allPlayerDistances = all.filter(player => !player.active).map(player => this.distance(player))
-      let minDistance = Math.min(...allPlayerDistances)
-      let nearPlayer = all[allPlayerDistances.indexOf(minDistance)]
-
-
-      // Составление пути к нему
-      let pathVector = new Vector(
-        this.x - nearPlayer.x,
-        this.y - nearPlayer.y
-      ).norm()
-
-      pathVector.x = Math.abs(pathVector.x) > Math.random() ? pathVector.x : 0
-      pathVector.y = Math.abs(pathVector.y) > Math.random() ? pathVector.y : 0
-
-      let pressedKeys = new Set()
-      if (pathVector.x > 0) {
-        pressedKeys.add('right')
-      }
-      if (pathVector.x < 0) {
-        pressedKeys.add('left')
-      }
-      if (pathVector.y > 0) {
-        pressedKeys.add('up')
-      }
-      if (pathVector.y < 0) {
-        pressedKeys.add('down')
-      }
-      super.manage(pressedKeys)
-
-    } else {
-      let activePlayer = all.filter(player => player.active)[0]
-
-      // Вершины границ
-      let points = [
-        new Vector(this.size, this.size),
-        new Vector(settings.width - this.size, this.size),
-        new Vector(this.size, settings.height - this.size),
-        new Vector(settings.width - this.size, settings.height - this.size),
-      ]
-
-      // Самая дальняя точка
-      let allPointDistances = points.map(point => activePlayer.distance(point))
-      let maxDistance = Math.max(...allPointDistances)
-      points.splice(allPointDistances.indexOf(maxDistance), 1)
-
-      allPointDistances = points.map(point => activePlayer.distance(point))
-      maxDistance = Math.max(...allPointDistances)
-      let awayPoint = points[allPointDistances.indexOf(maxDistance)]
-
-      // Составление пути от него
-      let pathVector = new Vector(
-        this.x - awayPoint.x,
-        this.y - awayPoint.y
-      ).norm()
-
-      pathVector.x = Math.abs(pathVector.x) > Math.random() ? pathVector.x : 0
-      pathVector.y = Math.abs(pathVector.y) > Math.random() ? pathVector.y : 0
-
-      let pressedKeys = new Set()
-      if (pathVector.x > 0) {
-        pressedKeys.add('right')
-      }
-      if (pathVector.x < 0) {
-        pressedKeys.add('left')
-      }
-      if (pathVector.y > 0) {
-        pressedKeys.add('up')
-      }
-      if (pathVector.y < 0) {
-        pressedKeys.add('down')
-      }
-      super.manage(pressedKeys)
-    }
+  changeName(name) {
+    this.name = name
   }
 }
 
+export class UserBall extends PlayerBall {
+  constructor(x, y, size, maxSpeed, keyboard) {
+    super(x, y, size, maxSpeed)
 
+    this.keyboard = keyboard
+  }
 
+  changePressedKeys(pressedKeys) {
+    // Оставляем только те нажатые клавиши, которые прописаны в keyboard объекта
+    let lastPressedKeys = Object.keys(_.pickBy(this.keyboard, function(value, key, object) {
+      return pressedKeys.has(value)
+    }))
+
+    if (lastPressedKeys.length !== this.lastPressedKeys.length) {
+      // this.lastPressedKeys = lastPressedKeys
+      this.pressedKeyAction(lastPressedKeys)
+    }
+  }
+
+  // Метод запускающийся при нажатие кнопок
+  pressedKeyAction () {}
+
+  manage() {
+
+    this.doStep(this.lastPressedKeys)
+  }
+}
+
+export function createUserObjectByObject(obj) {
+  let newPlayer =  new UserBall(obj.x, obj.y, obj.size)
+  newPlayer.id = obj.id
+  newPlayer.active = obj.active
+  newPlayer.status = obj.status
+  newPlayer.speed = obj.speed
+  newPlayer.vector = new Vector(obj.vector.x, obj.vector.y)
+  newPlayer.lastPressedKeys = obj.lastPressedKeys
+  newPlayer.color = obj.color
+  return newPlayer
+}
 
 
 
