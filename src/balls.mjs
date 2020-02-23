@@ -1,5 +1,5 @@
-import settings from './settings.js'
-import Vector from './vector.js'
+import settings from './settings.mjs'
+import Vector from './vector.mjs'
 
 export class Balls {
   constructor(x, y, size) {
@@ -161,6 +161,8 @@ export class PlayerBall extends Balls {
       n = n.norm().multiply(disDiff)
       this.x -= n.x
       this.y -= n.y
+
+
     }
   }
 
@@ -172,15 +174,15 @@ export class PlayerBall extends Balls {
       this.active = obj.active
       obj.active = active
 
-      if (this.active) {
-        this.status = false
-        setTimeout(() => {this.status = true}, settings.waitAfterStatusFalse)
-      }
-
-      if (obj.active) {
-        obj.status = false
-        setTimeout(() => {obj.status = true}, settings.waitAfterStatusFalse)
-      }
+      // if (this.active) {
+      //   this.status = false
+      //   setTimeout(() => {this.status = true}, settings.waitAfterStatusFalse)
+      // }
+      //
+      // if (obj.active) {
+      //   obj.status = false
+      //   setTimeout(() => {obj.status = true}, settings.waitAfterStatusFalse)
+      // }
     }
   }
 
@@ -216,11 +218,15 @@ export class PlayerBall extends Balls {
 
   changeColor(color) {
     this.color = color
+    this.updateMyData()
   }
 
   changeName(name) {
     this.name = name
+    this.updateMyData()
   }
+
+  updateMyData() {}
 }
 
 export class UserBall extends PlayerBall {
@@ -231,22 +237,26 @@ export class UserBall extends PlayerBall {
   }
 
   changePressedKeys(pressedKeys) {
+    console.log(pressedKeys)
     // Оставляем только те нажатые клавиши, которые прописаны в keyboard объекта
     let lastPressedKeys = Object.keys(_.pickBy(this.keyboard, function(value, key, object) {
       return pressedKeys.has(value)
     }))
 
-    if (lastPressedKeys.length !== this.lastPressedKeys.length) {
-      // this.lastPressedKeys = lastPressedKeys
-      this.pressedKeyAction(lastPressedKeys)
-    }
+    this.pressedKeyAction(lastPressedKeys)
+
+    // console.log(lastPressedKeys, this.lastPressedKeys)
+    // if (JSON.stringify(lastPressedKeys) !== JSON.stringify(this.lastPressedKeys)) {
+    //   console.log(lastPressedKeys)
+    //   // this.lastPressedKeys = lastPressedKeys
+    //   this.pressedKeyAction(lastPressedKeys)
+    // }
   }
 
   // Метод запускающийся при нажатие кнопок
   pressedKeyAction () {}
 
   manage() {
-
     this.doStep(this.lastPressedKeys)
   }
 }
@@ -260,6 +270,7 @@ export function createUserObjectByObject(obj) {
   newPlayer.vector = new Vector(obj.vector.x, obj.vector.y)
   newPlayer.lastPressedKeys = obj.lastPressedKeys
   newPlayer.color = obj.color
+  newPlayer.name = obj.name
   return newPlayer
 }
 
