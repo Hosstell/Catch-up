@@ -1,14 +1,18 @@
-import settings from "./settings.js"
-import {Point, Wall} from "./wall.js";
-import Vector from "./vector.js";
-import Socket from './socket.js'
-import {UserBall, createUserObjectByObject} from "./balls.js";
+import settings from "./settings.mjs"
+import {Point, Wall} from "./wall.mjs";
+import Vector from "./vector.mjs";
+import SocketClient from './socketClient.mjs'
+import {UserBall, createUserObjectByObject} from "./balls.mjs";
 
-export default class Game {
+export class GameClient {
   constructor(user, walls) {
     this.walls = walls
     this.user = user
     this.enemies = []
+  }
+
+  getAllUsers() {
+    return [this.user, ...this.enemies]
   }
 
   step() {
@@ -17,16 +21,14 @@ export default class Game {
   }
 
   update() {
-    this.user.update()
-    this.enemies.forEach(enemy => enemy.update())
+    let allUsers = this.getAllUsers()
+    allUsers.forEach(user => user.update())
 
-
-    let allPlayers = [this.user, ...this.enemies]
     // Проверка столновений между игроками
-    for(let i = 0; i<allPlayers.length; i++) {
+    for(let i = 0; i<allUsers.length; i++) {
       for(let j = 0; j<i; j++) {
-        let playerA = allPlayers[i]
-        let playerB = allPlayers[j]
+        let playerA = allUsers[i]
+        let playerB = allUsers[j]
 
         if (playerA.isNear(playerB)) {
           playerA.exchangeVector(playerB)
@@ -36,7 +38,7 @@ export default class Game {
     }
 
     // Проверка столкновений между игроком и стеной
-    allPlayers.forEach(player => {
+    allUsers.forEach(player => {
       this.walls.forEach(wall => {
         player.checkNearWall(wall)
       })
@@ -101,11 +103,16 @@ export default class Game {
   }
 
   manager() {
-    this.user.manage()
-    this.enemies.forEach(enemy => enemy.manage())
+    let allUsers = this.getAllUsers()
+    allUsers.forEach(user => user.manage())
   }
 
   getCopy() {
     return _.cloneDeep(this)
+  }
+
+  addEnemy(newEnemy) {
+    this.enemies = this.enemies.filter(enemy => newEnemy.id !== enemy.id)
+    this.enemies.push(createUserObjectByObject(newEnemy))
   }
 }
