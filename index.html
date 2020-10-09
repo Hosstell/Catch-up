@@ -1,56 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Title</title>
+    <meta charset="UTF-8">
+    <title>Title</title>
 </head>
-  <body>
+<body>
     <span>
       <canvas id="game"></canvas>
     </span>
 
-    <span style="position: absolute; padding-left: 15px;">
-      <div>
-        <span>
-          Color:
-        </span>
-
-        <span>
-          <input id="colorSelect" class="jscolor" value="000">
-        </span>
-      </div>
-
-      <div style="padding-top: 10px">
-        <span>
-          Nickname:
-        </span>
-
-        <span>
-          <input id="nicknameSelect" type="text">
-        </span>
-      </div>
-
-      <div style="padding-top: 20px">
-        <div>
-          Список людей:
-        </div>
-
-        <div id="playersList">
-
-        </div>
-      </div>
-
-
-    </span>
-    <script src="./src/jscolor.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="src/tools/lodash.js"></script>
+    <script src="node_modules/socket.io-client/dist/socket.io.js"></script>
+    <script src="./src/common/lodash.js"></script>
     <script type="module" src="./src/index.js"></script>
-  </body>
+</body>
 
-  <style>
+<style>
     #game {
-      border: 1px solid black;
+        border: 1px solid black;
     }
-  </style>
+</style>
 </html>

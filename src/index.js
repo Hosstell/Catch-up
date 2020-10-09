@@ -1,119 +1,18 @@
-import {UserBall} from './balls.mjs'
-import settings from './settings.mjs'
-import {GameClient} from './game.mjs'
-import {GameLogicClient} from './gameLogic.mjs'
-import {Wall, Point} from './wall.mjs'
-import SocketClient from './socketClient.mjs'
-
+import settings from "./settings.js";
+import {Game} from "./game.js";
+import {GameLogic} from "./gameLogic.js";
+import {Wall} from "./common/wall.js";
+import {Point} from "./common/point.js";
+import {User} from "./common/user.js"
+import {GameVizualizator} from './gameVizualizator.js'
+import getId from './common/id.js'
+import {getCurrentTime, getTime} from './common/time.js'
+import {Socket} from './socket.js'
 
 var canvas = document.getElementById('game')
 canvas.height = settings.height
 canvas.width = settings.width
-
-
-class HTML{
-  // Определение цвета
-  bindColorSelector(user) {
-    let colorSelect = document.getElementById('colorSelect')
-    colorSelect.value = localStorage.color ? localStorage.color : '000000'
-    let changeColor = function () {
-      localStorage.color = colorSelect.value
-      let color = '#' + colorSelect.value
-      user.changeColor(color)
-    }
-    colorSelect.onchange = changeColor
-    changeColor()
-  }
-
-  bindNameField(user) {
-    // Определение никнейма
-    let nicknameSelect = document.getElementById('nicknameSelect')
-    nicknameSelect.value = localStorage.name ? localStorage.name : '000000'
-    let changeName = function () {
-      localStorage.name = nicknameSelect.value
-      let nickname = nicknameSelect.value
-      user.changeName(nickname)
-    }
-    nicknameSelect.onchange = changeName
-    changeName()
-  }
-
-  bindKeyboardClick(user) {
-    window.onkeydown = (event) => {
-      pressedKeys.add(event.keyCode.toString())
-      user.changePressedKeys(pressedKeys)
-    }
-
-    window.onkeyup = (event) => {
-      pressedKeys.delete(event.keyCode.toString())
-      user.changePressedKeys(pressedKeys)
-    }
-  }
-
-  setPlayersList(players) {
-    console.log(players)
-    let playerList = document.getElementById('playersList')
-    playerList.innerHTML = ''
-
-    players.forEach(player => {
-      playerList.appendChild(this._get_html_element(player))
-    })
-  }
-
-  _get_html_element(user) {
-    let element = document.createElement('div')
-    element.style.display = 'flex'
-    element.style.paddingTop = '10px'
-    element.innerText = user.name
-
-    let color = document.createElement('div')
-    color.style.width = '20px'
-    color.style.height = '20px'
-    color.style.borderRadius = '10px'
-    color.style.marginLeft = '5px'
-    color.style.backgroundColor = user.color
-
-
-    element.appendChild(color)
-    return element
-  }
-}
-let html = new HTML()
-
 var context = canvas.getContext('2d')
-var pressedKeys = new Set()
-
-// Управление стрелки
-// var users = new UserBall(400, 100, 30, 2, {
-//   up: 38,
-//   down: 40,
-//   left: 39,
-//   right: 37
-// })
-
-// Управление WASD
-var user = new UserBall(300, 120, 30, 3, {
-  up: '87',
-  down: '83',
-  left: '68',
-  right: '65'
-})
-user.active = true
-
-// var walls = [
-//   new Wall(new Point(200, 200), new Point(400, 200)),
-//   new Wall(new Point(500, 200), new Point(700, 200)),
-//   new Wall(new Point(700, 200), new Point(700, 100)),
-//   new Wall(new Point(400, 200), new Point(400, 100)),
-//   new Wall(new Point(400, 100), new Point(700, 100)),
-//   new Wall(new Point(200, 300), new Point(700, 300)),
-//   new Wall(new Point(200, 400), new Point(500, 400)),
-//   new Wall(new Point(500, 400), new Point(500, 700)),
-//   new Wall(new Point(700, 300), new Point(700, 500)),
-//   // new Wall(new Point(700, 500), new Point(700, 700)),
-//   new Wall(new Point(700, 700), new Point(200, 700)),
-// ]
-
 
 
 var walls = [
@@ -137,19 +36,55 @@ var walls = [
 ]
 
 
-html.bindColorSelector(user)
-html.bindNameField(user)
-html.bindKeyboardClick(user)
+let users = [
+  new User(getId(), 300, 120, 30),
+  new User(getId(), 400, 120, 30),
+]
 
-let game = new GameClient(user, walls)
-let gameLogicClient = new GameLogicClient(game, context)
-let socket = new SocketClient(html)
-socket.bindGameLogic(gameLogicClient)
-socket.connect()
+let game = new Game(walls, getCurrentTime())
+
+// game.addEvent(getCurrentTime(), {
+//   id: users[0].id,
+//   x: users[0].x,
+//   y: users[0].y,
+//   typeEvent: 'newUser'
+// })
+// game.addEvent(getCurrentTime(), {
+//   id: users[1].id,
+//   x: users[1].x,
+//   y: users[1].y,
+//   typeEvent: 'newUser'
+// })
+
+settings.myId = users[0].id
+
+let gameVizualizator = new GameVizualizator(context)
+let gameLogic = new GameLogic(game, gameVizualizator)
+let gameSocket = new Socket()
+gameSocket.connect(game)
+
+let pressedButton = new Set()
+window.onkeydown = (event) => {
+  let code = event.keyCode.toString()
+  if (pressedButton.has(code)) {
+    return
+  }
+
+  let newEvent = gameLogic.onkeydown(event)
+  gameSocket.sendPressButtonEvent(newEvent)
+  pressedButton.add(code)
+}
+
+window.onkeyup = (event) => {
+  let code = event.keyCode.toString()
+  let newEvent = gameLogic.onkeyup(event)
+  gameSocket.sendPressButtonEvent(newEvent)
+  pressedButton.delete(code)
+}
 
 
 function index() {
-  gameLogicClient.loop()
+  gameLogic.loop()
 }
 setInterval(index, 10)
 

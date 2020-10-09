@@ -85,7 +85,6 @@ export class GameLogicClient {
   }
 
   changeGame(newGame) {
-    console.log('Список игроков')
     newGame.enemies.forEach(enemy => {
       console.log(enemy)
       this.addNewUser(enemy)

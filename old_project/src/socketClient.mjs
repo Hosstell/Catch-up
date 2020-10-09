@@ -13,7 +13,6 @@ export default class SocketClient{
 
     // Получение состояние игры
     this.socket.on('login', (game) => {
-      console.log('Пришли данные с сервера', game)
       this.gameLogic.changeGame(game)
       this.html.setPlayersList([
         this.gameLogic.game.user,
@@ -23,7 +22,6 @@ export default class SocketClient{
 
     // Получение всех игроков
     this.socket.on('getAllUsers', (anotherUsers) => {
-      console.log('getAllUsers', anotherUsers)
       anotherUsers.forEach(user => {
         this.gameLogic.game.enemies.push(createUserObjectByObject(user))
       })

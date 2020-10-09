@@ -1,5 +1,5 @@
 import {GameClient} from "./game.mjs";
-import {default as _} from './tools/lodash.js'
+import {default as _} from '../../src/common/lodash.js'
 
 export class GameServer extends GameClient {
   getAllUsers() {

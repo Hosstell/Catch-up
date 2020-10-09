@@ -237,7 +237,6 @@ export class UserBall extends PlayerBall {
   }
 
   changePressedKeys(pressedKeys) {
-    console.log(pressedKeys)
     // Оставляем только те нажатые клавиши, которые прописаны в keyboard объекта
     let lastPressedKeys = Object.keys(_.pickBy(this.keyboard, function(value, key, object) {
       return pressedKeys.has(value)
