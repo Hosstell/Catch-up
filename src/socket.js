@@ -25,12 +25,12 @@ export class Socket {
     })
 
     this.socket.on('pressButton', (event) => {
-
-      // if (event.event.userId !== settings.myId) {
-        game.addEvent(event.time, event.event)
-      // }
+      game.addEvent(event.time, event.event)
     })
 
+    this.socket.on('disconnect', event => {
+      game.addEvent(event.time, event.event)
+    })
 
     this.socket.emit('login')
     console.log('Отправлен запрос: login')

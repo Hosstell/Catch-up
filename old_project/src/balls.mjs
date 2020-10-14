@@ -28,8 +28,7 @@ export class PlayerBall extends Balls {
   constructor(x, y, size) {
     super(x, y, size)
 
-    this.active = false
-    this.status = true
+    this.active = true
     this.speed = 0.4
     this.vector = new Vector(0, 0)
     this.lastPressedKeys = []
@@ -167,29 +166,12 @@ export class PlayerBall extends Balls {
   }
 
   exchangeActive(obj) {
-    if (this.active && obj.active) return
-
-    if (this.status && obj.status) {
-      let active = this.active
-      this.active = obj.active
-      obj.active = active
-
-      // if (this.active) {
-      //   this.status = false
-      //   setTimeout(() => {this.status = true}, settings.waitAfterStatusFalse)
-      // }
-      //
-      // if (obj.active) {
-      //   obj.status = false
-      //   setTimeout(() => {obj.status = true}, settings.waitAfterStatusFalse)
-      // }
-    }
+    let active = this.active
+    this.active = obj.active
+    obj.active = active
   }
 
   doStep(pressedKeys) {
-    // Чтобы обездвижить после заманивания
-    if (!this.status) return
-
     let x = 0
     let y = 0
 

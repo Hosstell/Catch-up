@@ -31,23 +31,24 @@ export class GameVizualizator {
   }
 
   renderUser(user) {
-      let r = user.size/2
-      let x = user.x
-      let y = user.y
+    let r = user.size/2
+    let x = user.x
+    let y = user.y
 
-      this.ctx.fillStyle = this.color
-      this.ctx.beginPath()
-      this.ctx.arc(x, y, r, 0,Math.PI*2)
-      this.ctx.fill()
-      this.ctx.fillStyle = 'black'
-      this.ctx.stroke()
+    this.ctx.fillStyle = user.color
+    console.log(user.color, this.ctx.fillStyle)
+    this.ctx.beginPath()
+    this.ctx.arc(x, y, r, 0,Math.PI*2)
+    this.ctx.fill()
+    this.ctx.fillStyle = 'black'
+    this.ctx.stroke()
 
-      this.ctx.fillStyle = this.active ? 'black': 'white'
-      this.ctx.beginPath()
-      this.ctx.arc(x, y, r-7, 0,Math.PI*2)
-      this.ctx.fill()
-      this.ctx.fillStyle = 'black'
-      this.ctx.stroke()
+    this.ctx.fillStyle = user.active ? 'black': 'white'
+    this.ctx.beginPath()
+    this.ctx.arc(x, y, r-7, 0,Math.PI*2)
+    this.ctx.fill()
+    this.ctx.fillStyle = 'black'
+    this.ctx.stroke()
   }
 
   renderWall(wall) {

@@ -37,6 +37,7 @@ io.on('connection', function (socket) {
       id: socket.id,
       x: Math.random() * 100,
       y: Math.random() * 100,
+      color: generateColor(),
       typeEvent: 'newUser'
     }
 
@@ -61,31 +62,32 @@ io.on('connection', function (socket) {
   socket.on('disconnect', function () {
     console.log(`Пользователь ${socket.id} отключился`)
 
-    let newEvent = {
-      id: socket.id,
-      typeEvent: 'userGoOut'
+    let time = getCurrentTime()
+    let event = {
+      userId: socket.id,
+      typeEvent: 'disconnect'
     }
 
+    if (time in history) {
+      history[time].push(event)
+    } else {
+      history[time] = [event]
+    }
 
-
+    io.emit('disconnect', {
+      time: time,
+      event: event
+    })
   })
 
 
   socket.on('pressButton', function (event) {
-    console.log(socket.id, event.time, event.event.button, event.event.status)
-    console.log(event)
-
     if (event.time in history) {
       history[event.time].push(event.event)
     } else {
       history[event.time] = [event.event]
     }
-
-    setTimeout(() => {
-      io.emit('pressButton', event)
-    }, Math.random() * 300)
-
-    // io.emit('pressButton', event)
+    io.emit('pressButton', event)
   })
 
   //
@@ -109,6 +111,13 @@ io.on('connection', function (socket) {
 
 });
 
+
+function generateColor() {
+  let r = Math.floor(Math.random() * 255)
+  let g = Math.floor(Math.random() * 255)
+  let b = Math.floor(Math.random() * 255)
+  return `rgb(${r},${g},${b})`
+}
 
 // // начинаем прослушивать подключения на 3000 порту
 // app.listen(3000);

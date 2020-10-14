@@ -10,26 +10,6 @@ export class Game {
     this.walls = walls
     this.history = {}
     this.history_users = {}
-
-    this.times = []
-    this.count = 0
-    this.hashCode = function(s){
-      return s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
-    }
-    // this.delete = 0
-    //
-    // setTimeout(() => {
-    //   this.delete = 9000
-    //   this.currentTime -= 9000
-    //   this.users = this.history_users[this.currentTime]
-    // }, 10000)
-
-    // setInterval(() => {
-    //   console.log('update')
-    //   this.currentTime = this.startTimePoint
-    //   this.users = []
-    //   this.history_users = {}
-    // }, 20000)
   }
 
   addEvent(time, event) {
@@ -38,13 +18,8 @@ export class Game {
     } else {
       this.history[time] = [event]
     }
-    // this.currentTime = this.startTimePoint
-
-    // console.log(event.userId, time,  time, event.button, event.status)
-
 
     if (this.currentTime >= time) {
-
       let users = _.cloneDeep(this.history_users[time - 10])
       this.users = users
       console.log('time:', this.currentTime, time - 10, _.cloneDeep(this.users))
@@ -54,13 +29,10 @@ export class Game {
 
   step() {
     while (this.currentTime < getCurrentTime()) {
-      // console.log(this.currentTime, getCurrentTime())
-
       this.step_history()
       this.step_data()
 
       this.currentTime += 10
-
       this.history_users[this.currentTime] = _.cloneDeep(this.users)
     }
   }
@@ -68,15 +40,9 @@ export class Game {
   step_history() {
     let currentTime = this.currentTime + 10
     if (currentTime in this.history) {
-      let u = JSON.stringify(this.users)
-      let a = JSON.stringify(_.cloneDeep(this.users))
-      console.log('---', this.count, this.hashCode(u), this.hashCode(a))
       this.history[currentTime].forEach(event => {
-        console.log(currentTime, event.button, event.status)
         this.handlerEvent(event)
       })
-      this.count++
-
     }
   }
 
@@ -88,10 +54,13 @@ export class Game {
     if (event.typeEvent === 'newUser') {
       this.handlerEventNewUser(event)
     }
+
+    if (event.typeEvent === 'disconnect') {
+      this.handlerEventDisconnect(event)
+    }
   }
 
   handlerEventPressButton(event) {
-    // debugger
     let user = this.users.find(user => user.id === event.userId)
     if (event.status === 'down') {
       user.pressedKeys.add(event.button)
@@ -101,8 +70,15 @@ export class Game {
   }
 
   handlerEventNewUser(event) {
-    // console.log(event)
-    this.users.push( new User(event.id, event.x, event.y, 30))
+    this.users.forEach(user => user.active = false)
+    this.users.push( new User(event.id, event.x, event.y, 30, event.color))
+  }
+
+  handlerEventDisconnect(event) {
+    this.users = this.users.filter(user => user.id !== event.userId)
+    if (this.users.length) {
+      this.users[this.users.length - 1].active = true
+    }
   }
 
   step_data() {
@@ -127,6 +103,8 @@ export class Game {
       }
     }
   }
+
+
 
   // getAllUsers() {
   //   return [this.user, ...this.enemies]

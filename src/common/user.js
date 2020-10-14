@@ -3,17 +3,16 @@ import Vector from './vector.js'
 import {Ball} from './ball.js'
 
 export class User extends Ball {
-  constructor(id, x, y, size) {
+  constructor(id, x, y, size, color) {
     super(x, y, size)
 
     this.id = id
-    this.active = false
-    this.status = true
+    this.active = true
     this.speed = 0.4
     this.vector = new Vector(0, 0)
     this.pressedKeys = new Set()
     this.name = 'Игрок'
-    this.color = '#000'
+    this.color = color
   }
 
   update() {
@@ -124,23 +123,9 @@ export class User extends Ball {
   }
 
   exchangeActive(obj) {
-    if (this.active && obj.active) return
-
-    if (this.status && obj.status) {
-      let active = this.active
-      this.active = obj.active
-      obj.active = active
-
-      // if (this.active) {
-      //   this.status = false
-      //   setTimeout(() => {this.status = true}, settings.waitAfterStatusFalse)
-      // }
-      //
-      // if (obj.active) {
-      //   obj.status = false
-      //   setTimeout(() => {obj.status = true}, settings.waitAfterStatusFalse)
-      // }
-    }
+    let active = this.active
+    this.active = obj.active
+    obj.active = active
   }
 
   doStep() {
