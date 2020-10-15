@@ -1,6 +1,6 @@
 export default {
-  width: 1000,
-  height: 1000,
+  width: 800,
+  height: 800,
   dragCoefficient: 0.94,
   borderCoefficient: 0.3,
   waitAfterStatusFalse: 5000,

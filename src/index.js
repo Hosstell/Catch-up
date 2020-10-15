@@ -8,6 +8,7 @@ import {GameVizualizator} from './gameVizualizator.js'
 import getId from './common/id.js'
 import {getCurrentTime, getTime} from './common/time.js'
 import {Socket} from './socket.js'
+import {getNameUser, setNameUser, setUserList, setUserColor} from './userPanel.js'
 
 var canvas = document.getElementById('game')
 canvas.height = settings.height
@@ -61,7 +62,7 @@ settings.myId = users[0].id
 let gameVizualizator = new GameVizualizator(context)
 let gameLogic = new GameLogic(game, gameVizualizator)
 let gameSocket = new Socket()
-gameSocket.connect(game)
+gameSocket.connect(game, gameLogic.loop)
 
 let pressedButton = new Set()
 window.onkeydown = (event) => {

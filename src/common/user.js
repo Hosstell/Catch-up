@@ -3,7 +3,7 @@ import Vector from './vector.js'
 import {Ball} from './ball.js'
 
 export class User extends Ball {
-  constructor(id, x, y, size, color) {
+  constructor(id, x, y, size, color, name) {
     super(x, y, size)
 
     this.id = id
@@ -11,7 +11,7 @@ export class User extends Ball {
     this.speed = 0.4
     this.vector = new Vector(0, 0)
     this.pressedKeys = new Set()
-    this.name = 'Игрок'
+    this.name = name
     this.color = color
   }
 
@@ -176,7 +176,6 @@ export class UserBall extends User {
   }
 
   changePressedKeys(pressedKeys) {
-    console.log(pressedKeys)
     // Оставляем только те нажатые клавиши, которые прописаны в keyboard объекта
     let lastPressedKeys = Object.keys(_.pickBy(this.keyboard, function(value, key, object) {
       return pressedKeys.has(value)

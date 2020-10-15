@@ -1,6 +1,7 @@
 import settings from "./settings.js"
 import {getCurrentTime} from './common/time.js'
 import {User} from "./common/user.js";
+import {deleteAllUsersOnPanel, setUserList, setUserColor} from './userPanel.js'
 
 export class Game {
   constructor(walls, startTimePoint) {
@@ -22,7 +23,6 @@ export class Game {
     if (this.currentTime >= time) {
       let users = _.cloneDeep(this.history_users[time - 10])
       this.users = users
-      console.log('time:', this.currentTime, time - 10, _.cloneDeep(this.users))
       this.currentTime = time - 10
     }
   }
@@ -53,15 +53,31 @@ export class Game {
 
     if (event.typeEvent === 'newUser') {
       this.handlerEventNewUser(event)
+      this.updateUsersListPanel()
     }
 
     if (event.typeEvent === 'disconnect') {
       this.handlerEventDisconnect(event)
+      this.updateUsersListPanel()
+    }
+
+    if (event.typeEvent === 'changeName') {
+      this.handlerEventChangeName(event)
+      this.updateUsersListPanel()
+    }
+
+    if (event.typeEvent === 'changeColor') {
+      this.handlerEventChangeColor(event)
+      this.updateUsersListPanel()
     }
   }
 
   handlerEventPressButton(event) {
     let user = this.users.find(user => user.id === event.userId)
+    if (!user) {
+      return
+    }
+
     if (event.status === 'down') {
       user.pressedKeys.add(event.button)
     } else if (event.status === 'up') {
@@ -71,7 +87,11 @@ export class Game {
 
   handlerEventNewUser(event) {
     this.users.forEach(user => user.active = false)
-    this.users.push( new User(event.id, event.x, event.y, 30, event.color))
+    this.users.push( new User(event.id, event.x, event.y, 30, event.color, event.name))
+
+    if (event.id === settings.myId) {
+      setUserColor(event.color)
+    }
   }
 
   handlerEventDisconnect(event) {
@@ -79,6 +99,16 @@ export class Game {
     if (this.users.length) {
       this.users[this.users.length - 1].active = true
     }
+  }
+
+  handlerEventChangeName(event) {
+    let user = this.users.find(user => user.id === event.userId)
+    user.name = event.name
+  }
+
+  handlerEventChangeColor(event) {
+    let user = this.users.find(user => user.id === event.userId)
+    user.color = event.color
   }
 
   step_data() {
@@ -104,7 +134,10 @@ export class Game {
     }
   }
 
-
+  updateUsersListPanel() {
+    deleteAllUsersOnPanel()
+    setUserList(this.users)
+  }
 
   // getAllUsers() {
   //   return [this.user, ...this.enemies]

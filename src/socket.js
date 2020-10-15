@@ -1,15 +1,59 @@
 import settings from "./settings.js";
+import {defineStartHandler, getNameUser, setChangeNameHandler, setChangeColorHandler, getUserColor} from  './userPanel.js'
 
 export class Socket {
   constructor() {
     this.socket = io.connect('http://localhost:3000')
+
+    this.connectStatus = false
+    this.loopFunction = null
+
+    defineStartHandler(() => {
+      if (this.connectStatus) {
+        return
+      }
+
+      let name = getNameUser()
+      if (name) {
+        this.socket.emit('login', {
+          name: name
+        })
+        this.connectStatus = true
+        // setInterval(this.loopFunction, 10)
+      } else {
+        alert("Your name is not definite. Enter your name to the 'Your name' field")
+      }
+    })
+
+    setChangeNameHandler(() => {
+      if (!this.connectStatus) {
+        return
+      }
+
+      let name = getNameUser()
+      if (name) {
+        this.socket.emit('changeName', {
+          name: name,
+        })
+      } else {
+        alert("'Your name' field is empty!")
+      }
+    })
+
+    setChangeColorHandler(() => {
+      if (!this.connectStatus) {
+        return
+      }
+
+      let color = getUserColor()
+      this.socket.emit('changeColor', {
+        color: color,
+      })
+    })
   }
 
-  connect(game) {
+  connect(game, loop) {
     this.socket.on('login', (data) => {
-      console.log('Получен запрос: login')
-      console.log(data)
-
       settings.myId = data.userId
 
       game.history = data.history
@@ -32,11 +76,22 @@ export class Socket {
       game.addEvent(event.time, event.event)
     })
 
-    this.socket.emit('login')
-    console.log('Отправлен запрос: login')
+
+    this.socket.on('changeName', (event) => {
+      game.addEvent(event.time, event.event)
+    })
+
+    this.socket.on('changeColor', (event) => {
+      console.log(event)
+      game.addEvent(event.time, event.event)
+    })
   }
 
   sendPressButtonEvent(event) {
     this.socket.emit('pressButton', event)
+  }
+
+  setLoopFunction(loopFunction) {
+    this.loopFunction = loopFunction
   }
 }

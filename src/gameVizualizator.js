@@ -36,7 +36,6 @@ export class GameVizualizator {
     let y = user.y
 
     this.ctx.fillStyle = user.color
-    console.log(user.color, this.ctx.fillStyle)
     this.ctx.beginPath()
     this.ctx.arc(x, y, r, 0,Math.PI*2)
     this.ctx.fill()

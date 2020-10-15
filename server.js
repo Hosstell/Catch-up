@@ -16,25 +16,35 @@ app.get("/", function(request, response){
   response.sendFile(path.join(__dirname + '/index.html'));
 });
 
-
 let users = {}
 let history = {}
-let protectCodes = {}
 let startRoundTime = null
+let activeUsers = new Set()
+
+function createNewGame() {
+  users = {}
+  history = {}
+  startRoundTime = getCurrentTime()
+}
+
+function finishGame() {
+  users = {}
+  history = {}
+  startRoundTime = null
+}
+
 
 io.on('connection', function (socket) {
-  // console.log('Присоединился новый пользователь', socket.id)
-
-  socket.on('login', function () {
-    // console.log(`Пользователь ${socket.id} отправил запрос`)
-
-    if (!startRoundTime) {
-      startRoundTime = getCurrentTime()
+  // Вход нового пользователя
+  socket.on('login', function (userData) {
+    if (!activeUsers.size) {
+      createNewGame()
     }
 
     let time = getCurrentTime()
     let newUserEvent = {
       id: socket.id,
+      name: userData.name,
       x: Math.random() * 100,
       y: Math.random() * 100,
       color: generateColor(),
@@ -57,10 +67,17 @@ io.on('connection', function (socket) {
       time: time,
       event: newUserEvent
     })
+
+    activeUsers.add(socket.id)
   })
 
+  // Отключение пользователя
   socket.on('disconnect', function () {
-    console.log(`Пользователь ${socket.id} отключился`)
+    activeUsers.delete(socket.id)
+    if (!activeUsers.size) {
+      finishGame()
+      return
+    }
 
     let time = getCurrentTime()
     let event = {
@@ -80,7 +97,7 @@ io.on('connection', function (socket) {
     })
   })
 
-
+  // Нажатие кнопок
   socket.on('pressButton', function (event) {
     if (event.time in history) {
       history[event.time].push(event.event)
@@ -90,33 +107,62 @@ io.on('connection', function (socket) {
     io.emit('pressButton', event)
   })
 
-  //
-  //
-  // socket.on('sendMyPressedKeyEvent', function (event) {
-  //   // setTimeout(() => {
-  //   io.emit('sendPressedKeyEvent', event)
-  //   // }, 100)
-  // })
-  //
-  // // Получение других пользователей
-  //
-  //
-  // // Обновление данных пользователя
-  // socket.on('updateUser', function (user) {
-  //   players = players.filter(player => player.id !== id)
-  //   players.push(user)
-  //   io.emit('updateUser', user)
-  // })
-  //
 
+  // Изменение имени
+  socket.on('changeName', function (data) {
+
+    let time = getCurrentTime()
+    let event = {
+      userId: socket.id,
+      name: data.name,
+      typeEvent: 'changeName'
+    }
+
+    if (time in history) {
+      history[time].push(event)
+    } else {
+      history[time] = [event]
+    }
+
+    io.emit('changeName', {
+      time: time,
+      event: event
+    })
+  })
+
+  socket.on('changeColor', function (data) {
+
+    let time = getCurrentTime()
+    let event = {
+      userId: socket.id,
+      color: data.color,
+      typeEvent: 'changeColor'
+    }
+
+    if (time in history) {
+      history[time].push(event)
+    } else {
+      history[time] = [event]
+    }
+
+    io.emit('changeColor', {
+      time: time,
+      event: event
+    })
+  })
 });
 
 
 function generateColor() {
-  let r = Math.floor(Math.random() * 255)
-  let g = Math.floor(Math.random() * 255)
-  let b = Math.floor(Math.random() * 255)
-  return `rgb(${r},${g},${b})`
+  let r = Math.floor(Math.random() * 255).toString(16)
+  let g = Math.floor(Math.random() * 255).toString(16)
+  let b = Math.floor(Math.random() * 255).toString(16)
+
+  r = r.length === 1 ? '0' + r : r
+  g = g.length === 1 ? '0' + g : g
+  b = b.length === 1 ? '0' + b : b
+
+  return `#${r}${g}${b}`
 }
 
 // // начинаем прослушивать подключения на 3000 порту

@@ -1,22 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-    <span>
-      <canvas id="game"></canvas>
-    </span>
+  <head>
+      <meta charset="UTF-8">
+      <link rel="stylesheet" href="styles.css">
+      <title>Title</title>
+  </head>
+
+  <body>
+    <div class="display-flex">
+      <div>
+        <canvas id="game" class="border-1px"></canvas>
+      </div>
+
+      <div class="left-div">
+        <div class="start-button-field border-1px">
+          <button class="start-button" id="start-button"> start </button>
+        </div>
+
+        <div class="user-info border-1px">
+          <div class="user-info-inside">
+            <div>
+              <label>Your name:</label>
+              <div class="display-flex">
+                <input type="text" class="user-name-input" id="user-name"/>
+                <button id="change-user-name-btn"> change </button>
+              </div>
+            </div>
+
+            <div class="user-color-field">
+              <label>Your color:</label>
+              <div class="display-flex width-106">
+                <input type="color" class="user-color-input" id="user-color"/>
+                <button id="change-user-color-btn"> change </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="users-list border-1px">
+          <div class="user-item-label">
+            <label>User list:</label>
+          </div>
+          <div id="user-list"></div>
+        </div>
+      </div>
+
+    </div>
 
     <script src="node_modules/socket.io-client/dist/socket.io.js"></script>
     <script src="./src/common/lodash.js"></script>
     <script type="module" src="./src/index.js"></script>
-</body>
-
-<style>
-    #game {
-        border: 1px solid black;
-    }
-</style>
+  </body>
 </html>
