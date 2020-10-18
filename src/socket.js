@@ -3,7 +3,7 @@ import {defineStartHandler, getNameUser, setChangeNameHandler, setChangeColorHan
 
 export class Socket {
   constructor() {
-    this.socket = io.connect('http://localhost:3000')
+    this.socket = io.connect(settings.serverHost)
 
     this.connectStatus = false
     this.loopFunction = null

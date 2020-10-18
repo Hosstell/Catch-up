@@ -35,6 +35,8 @@ function finishGame() {
 
 
 io.on('connection', function (socket) {
+  console.log('Присоединился новый пользователь:', socket.id)
+
   // Вход нового пользователя
   socket.on('login', function (userData) {
     if (!activeUsers.size) {
@@ -165,12 +167,49 @@ function generateColor() {
   return `#${r}${g}${b}`
 }
 
-// // начинаем прослушивать подключения на 3000 порту
-// app.listen(3000);
-
-server.listen(3000, () => {
+const PORT = 3000
+server.listen(PORT, () => {
   console.log('Server is running')
+  console.log(`Server host: http://localhost:${PORT}/`)
 })
 
 
-// socket
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

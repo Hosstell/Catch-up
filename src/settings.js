@@ -12,5 +12,6 @@ export default {
     '65': 'right'
   },
   myId: null,
-  protectCode: null
+  protectCode: null,
+  serverHost: 'http://localhost:3000/'
 }
