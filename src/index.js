@@ -6,9 +6,9 @@ import {Point} from "./common/point.js";
 import {User} from "./common/user.js"
 import {GameVizualizator} from './gameVizualizator.js'
 import getId from './common/id.js'
-import {getCurrentTime, getTime} from './common/time.js'
+import {getCurrentTime} from './common/time.js'
 import {Socket} from './socket.js'
-import {getNameUser, setNameUser, setUserList, setUserColor} from './userPanel.js'
+
 
 var canvas = document.getElementById('game')
 canvas.height = settings.height
@@ -43,20 +43,6 @@ let users = [
 ]
 
 let game = new Game(walls, getCurrentTime())
-
-// game.addEvent(getCurrentTime(), {
-//   id: users[0].id,
-//   x: users[0].x,
-//   y: users[0].y,
-//   typeEvent: 'newUser'
-// })
-// game.addEvent(getCurrentTime(), {
-//   id: users[1].id,
-//   x: users[1].x,
-//   y: users[1].y,
-//   typeEvent: 'newUser'
-// })
-
 settings.myId = users[0].id
 
 let gameVizualizator = new GameVizualizator(context)

@@ -13,5 +13,5 @@ export default {
   },
   myId: null,
   protectCode: null,
-  serverHost: 'http://localhost:3000/'
+  serverHost: window.location.host
 }

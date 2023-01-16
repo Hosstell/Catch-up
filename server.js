@@ -1,13 +1,25 @@
-const express = require("express");
-const path = require('path');
+const express = require("express")
+const path = require('path')
 const http = require('http')
 const socketIO = require('socket.io')
 const {getCurrentTime} = require('./time')
-const {getId} = require('./id')
+const {ips} = require("./ip")
+
+
+const HOST = process.env.HOST || '0.0.0.0'
+const PORT = process.env.PORT || 3000
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server);
+const io = socketIO(server, {
+    cors: {
+        origin: `http://${HOST}:${PORT}/`,
+        methods: ["GET", "POST"],
+        transports: ["websocket", "polling"],
+        credentials: true
+    },
+    allowEIO3: true
+});
 
 
 app.use(express.static('./'))
@@ -35,7 +47,7 @@ function finishGame() {
 
 
 io.on('connection', function (socket) {
-  console.log('Присоединился новый пользователь:', socket.id)
+  console.log('New user connected! user_id:', socket.id)
 
   // Вход нового пользователя
   socket.on('login', function (userData) {
@@ -75,6 +87,8 @@ io.on('connection', function (socket) {
 
   // Отключение пользователя
   socket.on('disconnect', function () {
+    console.log('User disconnected! user_id:', socket.id)
+
     activeUsers.delete(socket.id)
     if (!activeUsers.size) {
       finishGame()
@@ -93,7 +107,7 @@ io.on('connection', function (socket) {
       history[time] = [event]
     }
 
-    io.emit('disconnect', {
+    io.emit('disconnect_', {
       time: time,
       event: event
     })
@@ -167,49 +181,11 @@ function generateColor() {
   return `#${r}${g}${b}`
 }
 
-const PORT = 3000
-server.listen(PORT, () => {
-  console.log('Server is running')
-  console.log(`Server host: http://localhost:${PORT}/`)
+server.listen(PORT, HOST, () => {
+  console.log('Server is running!\n')
+
+  console.log(`Local host: http://${HOST}:${PORT}/`)
+  for (const key in ips) {
+    console.log(`${key}: http://${ips[key]}:${PORT}/`)
+  }
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

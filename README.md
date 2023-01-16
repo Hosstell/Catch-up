@@ -1,15 +1,9 @@
-# Браузерная игра "Catch-Up" ("Догонялки")
+# Online browser game "Catch up"
 
-
-## Запуск
+## Running
+```shell
+npm start
 ```
-npn start
-```
 
-### Настройка при изменении порта или/и хоста.
-**Новую ссылку на сервер необходимо изменить в файле ./src/settings.js**
-![](./gifs/1.gif)
-
-
-## Геймплей
+## Gameplay
 ![](./gifs/2.gif)

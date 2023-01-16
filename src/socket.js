@@ -1,5 +1,5 @@
 import settings from "./settings.js";
-import {defineStartHandler, getNameUser, setChangeNameHandler, setChangeColorHandler, getUserColor} from  './userPanel.js'
+import {defineStartHandler, getNameUser, setChangeNameHandler, setChangeColorHandler, getUserColor} from './userPanel.js'
 
 export class Socket {
   constructor() {
@@ -52,7 +52,7 @@ export class Socket {
     })
   }
 
-  connect(game, loop) {
+  connect(game) {
     this.socket.on('login', (data) => {
       settings.myId = data.userId
 
@@ -72,7 +72,7 @@ export class Socket {
       game.addEvent(event.time, event.event)
     })
 
-    this.socket.on('disconnect', event => {
+    this.socket.on('disconnect_', event => {
       game.addEvent(event.time, event.event)
     })
 
